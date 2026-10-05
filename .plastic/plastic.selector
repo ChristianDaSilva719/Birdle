@@ -1,0 +1,4 @@
+repository "Birdle/Birdle@17867271299089@cloud"
+  path "/"
+    br "/main"
+    co "/main"

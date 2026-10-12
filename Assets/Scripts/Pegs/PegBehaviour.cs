@@ -111,14 +111,9 @@ public class PegBehaviour : MonoBehaviour
     }
 
     //-----Destroy Peg----//
-    void OnDestroyPeg() //Destroys The peg and plays break effects
+    void DestroyPeg() //Destroys The peg and plays break effects
     {
         Destroy(this.gameObject);
-    }
-
-    public void DestroyPeg() //Public function for peg destruction
-    {
-        StartCoroutine(StartDestroy());
     }
 
     IEnumerator StartDestroy() //IEnumerator that destroys peg after set amount of Time
@@ -130,14 +125,14 @@ public class PegBehaviour : MonoBehaviour
         yield return new WaitForSeconds(PegDestroyTime);
 
         SlowMoActive = false;
-        OnDestroyPeg();
+        DestroyPeg();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.collider.tag == "Ball")
         {
-            DestroyPeg();
+            StartCoroutine(StartDestroy());
         }
 
     }

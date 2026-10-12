@@ -177,7 +177,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
-  m_Color: {r: 0.5990566, g: 0.95301074, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -236,10 +236,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PegBehaviour
   PegCollider: {fileID: 3416104893603682912}
   SlowMoCollider: {fileID: 3649912528796057525}
-  PegType: 0
+  Peg: 0
+  PegDestroyTime: 5
   PegColour: {r: 0.36320752, g: 1, b: 0.964445, a: 1}
+  DisabledColour: {r: 0.17065683, g: 0.5145295, b: 0.6132076, a: 1}
   PegBoarderSR: {fileID: 7389035791171637499}
   InnerPegSR: {fileID: 510611740556829948}
+  SlowMoActive: 0
   TimeSpeedRate: 0.2
   TimeSpeedTarget: 0.1
 --- !u!58 &3649912528796057525

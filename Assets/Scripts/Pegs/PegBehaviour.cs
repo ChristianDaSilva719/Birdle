@@ -16,6 +16,8 @@ public class PegBehaviour : MonoBehaviour
 
     [Header("Peg Settings")]
     public PegType Peg; //The Type of peg
+    private bool BeenHit = false;
+    private int ScoreAmount;
 
     [SerializeField] float PegDestroyTime = 5; //How long it takes for the peg to be destoryed
 
@@ -34,7 +36,23 @@ public class PegBehaviour : MonoBehaviour
 
     private void Awake()
     {
-
+        switch (Peg)
+        {
+            case PegType.PEG_BASIC:
+                ScoreAmount = 25;
+                break;
+            case PegType.PEG_REQUIRED:
+                ScoreAmount = 50;
+                break;
+            case PegType.PEG_POWERUP:
+                ScoreAmount = 25;
+                break;
+            case PegType.PEG_SPECIAL:
+                ScoreAmount = 100;
+                break;
+            default:
+                break;
+        }
     }
 
     void Start()
@@ -133,6 +151,11 @@ public class PegBehaviour : MonoBehaviour
         if (collision.collider.tag == "Ball")
         {
             StartCoroutine(StartDestroy());
+            if(!BeenHit)
+            {
+                GameManager.instance.RoundScore += ScoreAmount;
+            }
+            BeenHit = true;
         }
 
     }

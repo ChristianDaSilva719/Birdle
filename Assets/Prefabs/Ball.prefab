@@ -171,6 +171,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   launchPower: 8
   maxPullDistance: 3
+  minPullToLaunch: 0.3
   slowDownDrag: 0.7
-  stopSpeed: 0.1
+  bounciness: 0.9
+  stopSpeed: 0.5
   aimLine: {fileID: 0}

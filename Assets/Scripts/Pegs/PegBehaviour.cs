@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public enum PegType
@@ -7,19 +6,14 @@ public enum PegType
     PEG_REQUIRED,
     PEG_POWERUP,
     PEG_SPECIAL
-
 }
-
 
 public class PegBehaviour : MonoBehaviour
 {
-
     [Header("Peg Settings")]
-    public PegType Peg; //The Type of peg
+    public PegType Peg; //The Type of peg (set by the LevelGenerator when the peg spawns)
     private bool BeenHit = false;
     private int ScoreAmount;
-
-    [SerializeField] float PegDestroyTime = 5; //How long it takes for the peg to be destoryed
 
     [Header("Peg Effects")]
     public Color PegColour;
@@ -27,136 +21,103 @@ public class PegBehaviour : MonoBehaviour
     [SerializeField] SpriteRenderer PegBoarderSR;
     [SerializeField] SpriteRenderer InnerPegSR;
 
-    [Header("SlowMo")]
-    public bool SlowMoActive = false;
-    [SerializeField] private float TimeSpeedRate;
-    [SerializeField] private float TimeSpeedTarget;
-    private float TimeScaleSpeed = 1;
-
+    private bool slowMoRequested = false;
 
     private void Awake()
+    {
+        ApplyType();
+    }
+
+    //Called by the LevelGenerator right after the peg is spawned
+    public void SetType(PegType type)
+    {
+        Peg = type;
+        ApplyType();
+    }
+
+    void ApplyType()
     {
         switch (Peg)
         {
             case PegType.PEG_BASIC:
                 ScoreAmount = 25;
+                PegColour = new Color32(0x5D, 0xFF, 0xF6, 255);
+                DisabledColour = new Color32(0x2C, 0x83, 0x9C, 255);
                 break;
             case PegType.PEG_REQUIRED:
                 ScoreAmount = 50;
+                PegColour = new Color32(0xFF, 0x9F, 0x28, 255);
+                DisabledColour = new Color32(0x9F, 0x49, 0x2C, 255);
                 break;
             case PegType.PEG_POWERUP:
                 ScoreAmount = 25;
+                PegColour = new Color32(0x52, 0xFF, 0x40, 255);
+                DisabledColour = new Color32(0x20, 0x90, 0x01, 255);
                 break;
             case PegType.PEG_SPECIAL:
-                ScoreAmount = 100;
-                break;
-            default:
+                ScoreAmount = 100; //Special keeps whatever colours are set in the inspector
                 break;
         }
-    }
 
-    void Start()
-    {
-        TimeScaleSpeed = 1;
-        SlowMoActive = false;
-
-        //Colour Setup
         PegBoarderSR.color = new Color(PegColour.r + 0.5f, PegColour.g + 0.5f, PegColour.b + 0.5f);
         InnerPegSR.color = PegColour;
-
     }
 
-    // Update is called once per frame
-    void FixedUpdate()
+    //-----Slow Motion-----//
+    //Pegs only ask for slow-mo, the GameManager is the only thing that touches Time.timeScale
+    void SetSlowMo(bool on)
     {
-        if (Peg == PegType.PEG_REQUIRED)
-        {
-            if (SlowMoActive)
-            {
-                EnableSlowMo();
+        if (slowMoRequested == on) return;
+        slowMoRequested = on;
 
-            }
-            else
-            {
-                EndSlowMo();
-            }
-        }
-
+        if (GameManager.instance != null)
+            GameManager.instance.AddSlowMoRequest(on ? 1 : -1);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag == "Ball")
+        if (collision.CompareTag("Ball") && Peg == PegType.PEG_REQUIRED)
         {
-            if (Peg == PegType.PEG_REQUIRED)
-            {
-                SlowMoActive = true;
-            }
+            SetSlowMo(true);
         }
-
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.tag == "Ball")
+        if (collision.CompareTag("Ball") && Peg == PegType.PEG_REQUIRED)
         {
-            if (Peg == PegType.PEG_REQUIRED)
-            {
-                SlowMoActive = false;
-            }
+            SetSlowMo(false);
         }
     }
 
-    //-----Slow Motion Control-----//
-    void EnableSlowMo()
+    private void OnDestroy()
     {
-        if (TimeScaleSpeed > TimeSpeedTarget)
-        {
-            TimeScaleSpeed -= TimeSpeedRate;
-            TimeScaleSpeed = Mathf.Clamp(TimeScaleSpeed, TimeSpeedTarget, 1);
-        }
-        Time.timeScale = TimeScaleSpeed;
-        Time.fixedDeltaTime = Time.timeScale * .02f;
-    }
-
-    void EndSlowMo()
-    {
-        if (TimeScaleSpeed < 1)
-        {
-            TimeScaleSpeed += TimeSpeedRate;
-        }
-        Time.timeScale = TimeScaleSpeed;
+        //A destroyed peg never gets an OnTriggerExit, so it hands its slow-mo request back here
+        SetSlowMo(false);
     }
 
     //-----Destroy Peg----//
-    void DestroyPeg() //Destroys The peg and plays break effects
+    //Called by the GameManager once the ball has stopped
+    public void DestroyPeg() //Destroys The peg and plays break effects
     {
         Destroy(this.gameObject);
     }
 
-    IEnumerator StartDestroy() //IEnumerator that destroys peg after set amount of Time
+    private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (!collision.collider.CompareTag("Ball") || BeenHit) return;
+        BeenHit = true;
+
+        //Greys out straight away but stays solid, the GameManager removes it when the ball stops
         PegBoarderSR.color = new Color(DisabledColour.r + 0.5f, DisabledColour.g + 0.5f, DisabledColour.b + 0.5f);
         InnerPegSR.color = DisabledColour;
 
+        GameManager.instance.RoundScore += ScoreAmount;
+        GameManager.instance.RegisterHitPeg(this);
 
-        yield return new WaitForSeconds(PegDestroyTime);
-
-        SlowMoActive = false;
-        DestroyPeg();
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.collider.tag == "Ball")
-        {
-            StartCoroutine(StartDestroy());
-            if(!BeenHit)
-            {
-                GameManager.instance.RoundScore += ScoreAmount;
-            }
-            BeenHit = true;
-        }
-
+        if (Peg == PegType.PEG_REQUIRED)
+            GameManager.instance.OnRequiredPegHit();
+        else if (Peg == PegType.PEG_POWERUP)
+            GameManager.instance.OnPowerUpHit();
     }
 }

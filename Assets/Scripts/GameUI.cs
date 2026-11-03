@@ -125,8 +125,8 @@ public class GameUI : MonoBehaviour
         {
             levelCompleteTitle.text = levelCompleteTitleFormat
                 .Replace("{level}", gm.CurrentLevel.ToString())
-                .Replace("{banked}", banked.ToString())
-                .Replace("{turns}", turnsLeft.ToString())
+                .Replace("{banked}", banked.ToString())//Score without multiply
+                .Replace("{turns}", (turnsLeft).ToString()) //Bonus
                 .Replace("{total}", gm.GameScore.ToString());
         }
 
@@ -134,8 +134,8 @@ public class GameUI : MonoBehaviour
         {
             levelCompleteDetails.text = levelCompleteDetailsFormat
                 .Replace("{level}", gm.CurrentLevel.ToString())
-                .Replace("{banked}", banked.ToString())
-                .Replace("{turns}", turnsLeft.ToString())
+                .Replace("{banked}", banked.ToString())//Score without multiply
+                .Replace("{turns}", (turnsLeft).ToString()) //Bonus
                 .Replace("{total}", gm.GameScore.ToString());
         }
 

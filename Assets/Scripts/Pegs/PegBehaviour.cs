@@ -50,7 +50,7 @@ public class PegBehaviour : MonoBehaviour
                 DisabledColour = new Color32(0x9F, 0x49, 0x2C, 255);
                 break;
             case PegType.PEG_POWERUP:
-                ScoreAmount = 25;
+                ScoreAmount = 75;
                 PegColour = new Color32(0x52, 0xFF, 0x40, 255);
                 DisabledColour = new Color32(0x20, 0x90, 0x01, 255);
                 break;
@@ -78,7 +78,7 @@ public class PegBehaviour : MonoBehaviour
     {
         if (collision.CompareTag("Ball") && Peg == PegType.PEG_REQUIRED)
         {
-            SetSlowMo(true);
+            //SetSlowMo(true);
         }
     }
 

@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour
     [Header("References")]
     [SerializeField] LevelGenerator levelGenerator;
     [SerializeField] DragLaunchBall ball;
+    [SerializeField] UIController UIcontrol;
 
     [Header("Ball Info")]
     public int AmountOfBalls; //The turns the player has left
@@ -103,6 +104,7 @@ public class GameManager : MonoBehaviour
         AmountOfBalls = data.turns;
         RequiredPegsLeft = data.requiredCount;
         RoundScore = 0;
+        UIcontrol.ResetScoreText();
         BallAlive = false;
         revivesUsed = 0;
         hitPegs.Clear();
@@ -127,7 +129,9 @@ public class GameManager : MonoBehaviour
     {
         if (GameState == State.LevelComplete) return;
 
-        BeginAttempt(levelGenerator.RespawnSameLevel());
+        CurrentLevel = 1;
+        GameScore = 0;
+        BeginAttempt(levelGenerator.GenerateNewLevel(CurrentLevel));
     }
 
     //Lost -> watch an ad to carry on with the board exactly as it is
@@ -157,6 +161,7 @@ public class GameManager : MonoBehaviour
     public void OnBallStopped()
     {
         BallAlive = false;
+
         if (GameState != State.Playing) return;
 
         ClearHitPegs(); //The pegs the ball touched disappear now that the ball can move again
@@ -205,7 +210,7 @@ public class GameManager : MonoBehaviour
         int banked = Mathf.RoundToInt((RoundScore + turnBonus) * multiplier);
         GameScore += banked;
 
-        OnLevelComplete?.Invoke(banked, AmountOfBalls);
+        OnLevelComplete?.Invoke(RoundScore, turnBonus);
     }
 
     void EndGame()

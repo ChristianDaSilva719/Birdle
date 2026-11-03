@@ -29,6 +29,10 @@ public class GameUI : MonoBehaviour
     [SerializeField] GameObject gameOverPanel;
     [SerializeField] Button reviveButton;   //Hidden automatically when no revive is available
     [SerializeField] Button tryAgainButton;
+    public TextMeshProUGUI ScoreText;
+    public GameObject NewBestScoreObj;
+    public TextMeshProUGUI LevelText;
+    public GameObject NewBestLevelObj;
 
     [Header("Setup")]
     [SerializeField] bool createEventSystemIfMissing = true; //Buttons need an EventSystem to be clickable
@@ -145,6 +149,7 @@ public class GameUI : MonoBehaviour
     void HandleGameOver()
     {
         HideYourMove();
+        FinalScoreTally();
 
         if (reviveButton != null) reviveButton.gameObject.SetActive(gm.CanRevive);
         if (gameOverPanel != null) gameOverPanel.SetActive(true);
@@ -171,6 +176,34 @@ public class GameUI : MonoBehaviour
         if (yourMoveRoutine != null) StopCoroutine(yourMoveRoutine);
         yourMoveRoutine = null;
         yourMoveObject.gameObject.SetActive(false);
+    }
+
+    void FinalScoreTally()
+    {
+        ScoreText.text = $"Score: {gm.GameScore}";
+        if (gm.GameScore < PlayerPrefs.GetInt("HighScore"))
+        {
+            PlayerPrefs.SetInt("HighScore", gm.GameScore);
+            Debug.Log("New High Score");
+            NewBestScoreObj.SetActive(true);
+        }
+        else
+        {
+            NewBestScoreObj.SetActive(false);
+        }
+
+            LevelText.text = $"Level: {gm.CurrentLevel}";
+        if(gm.CurrentLevel > PlayerPrefs.GetInt("HighestLevel") )
+        {
+            PlayerPrefs.SetInt("HighestLevel", gm.CurrentLevel);
+            Debug.Log("New Highest Level");
+            NewBestLevelObj.SetActive(true);
+        }
+        else
+        {
+            NewBestLevelObj.SetActive(false);
+        }
+
     }
 
     IEnumerator YourMoveRoutine()

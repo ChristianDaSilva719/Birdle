@@ -1232,7 +1232,7 @@ GameObject:
   - component: {fileID: 975495690}
   - component: {fileID: 975495692}
   m_Layer: 5
-  m_Name: Button
+  m_Name: WatchAd
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2331,7 +2331,7 @@ GameObject:
   - component: {fileID: 1841013933}
   - component: {fileID: 1841013932}
   m_Layer: 5
-  m_Name: Button (1)
+  m_Name: RestartButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

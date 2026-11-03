@@ -216,6 +216,21 @@ public class GameManager : MonoBehaviour
     void EndGame()
     {
         GameState = State.GameOver;
+        SetHighScore();
         OnGameOver?.Invoke();
     }
+
+    void SetHighScore()
+    {
+        if(GameScore > PlayerPrefs.GetInt("HighScore"))
+        {
+            PlayerPrefs.SetInt("HighScore", GameScore);
+        }
+
+        if (GameScore > PlayerPrefs.GetInt("HighestLevel"))
+        {
+            PlayerPrefs.SetInt("HighestLevel", CurrentLevel);
+        }
+    }
+
 }

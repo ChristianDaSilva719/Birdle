@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(CircleCollider2D))]
@@ -30,7 +31,7 @@ public class DragLaunchBall : MonoBehaviour
         cam = Camera.main;
 
         if (cam == null)
-            Debug.LogError("DragLaunchBall: no camera tagged MainCamera, so the mouse can't be turned into a world position.");
+            Debug.LogError("DragLaunchBall: no camera tagged MainCamera, so the pointer can't be turned into a world position.");
 
         rb.gravityScale = 0f;
         rb.linearDamping = slowDownDrag; // use rb.drag on Unity 2022 and older
@@ -70,8 +71,10 @@ public class DragLaunchBall : MonoBehaviour
     {
         if (EventSystem.current == null) return false;
 
-        if (Input.touchCount > 0)
-            return EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+        // Touches need their own id, the mouse uses the default
+        Touchscreen touchscreen = Touchscreen.current;
+        if (touchscreen != null && touchscreen.primaryTouch.press.isPressed)
+            return EventSystem.current.IsPointerOverGameObject(touchscreen.primaryTouch.touchId.ReadValue());
 
         return EventSystem.current.IsPointerOverGameObject();
     }
@@ -84,15 +87,18 @@ public class DragLaunchBall : MonoBehaviour
 
     void Update()
     {
-        if (cam == null) return;
+        // Pointer.current is whichever of mouse, touch or pen was used last
+        Pointer pointer = Pointer.current;
+        if (cam == null || pointer == null) return;
 
-        Vector2 mouseWorld = cam.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 screenPos = pointer.position.ReadValue();
+        Vector2 pointerWorld = cam.ScreenToWorldPoint(screenPos);
 
         // Start aiming anywhere on the screen
-        if (Input.GetMouseButtonDown(0) && CanShoot() && !PointerOverUI())
+        if (pointer.press.wasPressedThisFrame && CanShoot() && !PointerOverUI())
         {
             isDragging = true;
-            dragStart = mouseWorld;
+            dragStart = pointerWorld;
             if (aimLine != null) aimLine.enabled = true;
         }
 
@@ -106,7 +112,7 @@ public class DragLaunchBall : MonoBehaviour
         }
 
         // Pull is measured from where the press started, not from the ball
-        Vector2 pull = Vector2.ClampMagnitude(mouseWorld - dragStart, maxPullDistance);
+        Vector2 pull = Vector2.ClampMagnitude(pointerWorld - dragStart, maxPullDistance);
 
         if (aimLine != null)
         {
@@ -114,7 +120,7 @@ public class DragLaunchBall : MonoBehaviour
             aimLine.SetPosition(1, (Vector2)transform.position - pull); // opposite of the pull
         }
 
-        if (Input.GetMouseButtonUp(0))
+        if (pointer.press.wasReleasedThisFrame)
         {
             CancelDrag();
 

@@ -13,7 +13,7 @@ public class LevelGenerator : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] PegBehaviour pegPrefab;
-    [SerializeField] Transform pegParent; //Optional, keeps the hierarchy tidy
+    [SerializeField] Transform pegParent; //Optional, must be an object in the scene (not from the Project window)
     [SerializeField] Camera cam;
 
     [Header("Cleanup")]
@@ -67,6 +67,7 @@ public class LevelGenerator : MonoBehaviour
     private readonly List<PegBehaviour> spawnedPegs = new List<PegBehaviour>();
     private EdgeCollider2D wallCollider;
     private LineRenderer wallLine;
+    private Transform runtimePegParent;
     private int currentLevel;
 
     //-----Safety-----//
@@ -97,6 +98,24 @@ public class LevelGenerator : MonoBehaviour
         }
 
         return true;
+    }
+
+    //Where spawned pegs get parented: the assigned Peg Parent if it's a scene object, otherwise an auto-made "Pegs" container
+    Transform GetPegParent()
+    {
+        if (pegParent != null)
+        {
+            //Assets from the Project window (prefabs) don't belong to a scene, and Unity won't parent clones to them
+            if (pegParent.gameObject.scene.IsValid())
+                return pegParent;
+
+            pegParent = null; //Only warn once
+        }
+
+        if (runtimePegParent == null)
+            runtimePegParent = new GameObject("Pegs").transform;
+
+        return runtimePegParent;
     }
 
     //-----Public-----//
@@ -337,10 +356,11 @@ public class LevelGenerator : MonoBehaviour
 
         PegType[] types = RollTypes();
         int requiredCount = 0;
+        Transform parent = GetPegParent();
 
         for (int i = 0; i < positions.Count; i++)
         {
-            PegBehaviour peg = Instantiate(pegPrefab, positions[i], Quaternion.identity, pegParent);
+            PegBehaviour peg = Instantiate(pegPrefab, positions[i], Quaternion.identity, parent);
             peg.SetType(types[i]);
             spawnedPegs.Add(peg);
 

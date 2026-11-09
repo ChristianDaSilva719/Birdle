@@ -1828,7 +1828,7 @@ MonoBehaviour:
   boardCentre: {x: 0, y: 0}
   fullBoardSize: {x: 8, y: 14}
   firstLevelFill: 0.65
-  levelsToFullSize: 8
+  levelsToFullSize: 0
   fitCameraToPhone: 1
   sideMargin: 0.08
   topMargin: 0.18

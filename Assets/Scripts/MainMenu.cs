@@ -33,7 +33,7 @@ public class MainMenu : MonoBehaviour
 
     public void Play() 
     {
-        SceneManager.LoadScene("Main Game");
+        SceneManager.LoadScene("InfiniteLevels");
     }
 
 }

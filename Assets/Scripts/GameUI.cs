@@ -181,7 +181,9 @@ public class GameUI : MonoBehaviour
     void FinalScoreTally()
     {
         ScoreText.text = $"Score: {gm.GameScore}";
-        if (gm.GameScore < PlayerPrefs.GetInt("HighScore"))
+        Debug.Log($"Final Score: {gm.GameScore} & last score: {PlayerPrefs.GetInt("HighScore")}");
+
+        if (gm.GameScore > PlayerPrefs.GetInt("HighScore"))
         {
             PlayerPrefs.SetInt("HighScore", gm.GameScore);
             Debug.Log("New High Score");
@@ -193,7 +195,7 @@ public class GameUI : MonoBehaviour
         }
 
             LevelText.text = $"Level: {gm.CurrentLevel}";
-        if(gm.CurrentLevel > PlayerPrefs.GetInt("HighestLevel") )
+        if(gm.CurrentLevel > PlayerPrefs.GetInt("HighestLevel") || PlayerPrefs.GetInt("HighestLevel") == null )
         {
             PlayerPrefs.SetInt("HighestLevel", gm.CurrentLevel);
             Debug.Log("New Highest Level");

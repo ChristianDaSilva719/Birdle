@@ -35,6 +35,9 @@ public class GameManager : MonoBehaviour
     [Header("Level Progress")]
     public int RequiredPegsLeft;
 
+    [Header("Holes")]
+    [SerializeField] int holeExtraTurnPenalty = 0; //Extra turns lost on top of the shot itself when the ball falls in a hole
+
     [Header("Revive")]
     [SerializeField] int reviveTurns = 3;           //Extra turns given by a rewarded ad
     [SerializeField] int maxRevivesPerAttempt = 1;
@@ -174,6 +177,14 @@ public class GameManager : MonoBehaviour
             OnYourMove?.Invoke();
     }
 
+    //The ball dropped into a hole and has been put back where the shot started
+    //The turn for the shot is already spent, this just takes any extra penalty and then ends the shot as normal
+    public void OnBallFellInHole()
+    {
+        AmountOfBalls = Mathf.Max(0, AmountOfBalls - holeExtraTurnPenalty);
+        OnBallStopped();
+    }
+
     //-----Called by the pegs-----//
     public void RegisterHitPeg(PegBehaviour peg)
     {
@@ -222,7 +233,7 @@ public class GameManager : MonoBehaviour
 
     void SetHighScore()
     {
-        if(GameScore > PlayerPrefs.GetInt("HighScore"))
+        if (GameScore > PlayerPrefs.GetInt("HighScore"))
         {
             PlayerPrefs.SetInt("HighScore", GameScore);
         }

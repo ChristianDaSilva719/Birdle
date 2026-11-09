@@ -612,6 +612,7 @@ MonoBehaviour:
   ScoreMultipler: 0
   turnBonusScore: 100
   RequiredPegsLeft: 0
+  holeExtraTurnPenalty: 0
   reviveTurns: 3
   maxRevivesPerAttempt: 1
   slowMoTimeScale: 0.3
@@ -1829,6 +1830,23 @@ MonoBehaviour:
   fullBoardSize: {x: 8, y: 14}
   firstLevelFill: 0.65
   levelsToFullSize: 0
+  levelsPerShapeTier: 2
+  randomFlip: 1
+  extraTurnsPerShapeTier: 0
+  ballStartEdgeClearance: 0.6
+  holesStartLevel: 3
+  levelsPerExtraHole: 5
+  minHoles: 0
+  maxHoles: 4
+  biggestHoleRadius: 0.8
+  smallestHoleRadius: 0.4
+  biggestHoleCaptureFraction: 1.1
+  smallestHoleCaptureFraction: 0.6
+  holeAreaShare: 0.08
+  extraTurnsPerHole: 0.5
+  holeColour: {r: 0.04, g: 0.06, b: 0.12, a: 1}
+  holeRimColour: {r: 0.16, g: 0.22, b: 0.38, a: 1}
+  holeSortingOrder: -5
   fitCameraToPhone: 1
   sideMargin: 0.08
   topMargin: 0.18

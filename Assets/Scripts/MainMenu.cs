@@ -31,9 +31,9 @@ public class MainMenu : MonoBehaviour
         SetUpHighScore();
     }
 
-    public void Play() 
+    public void Play(string _LevelToLoad) 
     {
-        SceneManager.LoadScene("InfiniteLevels");
+        SceneManager.LoadScene(_LevelToLoad);
     }
 
 }

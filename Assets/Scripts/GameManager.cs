@@ -85,7 +85,7 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (GameState == State.Paused) return;
+        if (GameState == State.Paused) Time.timeScale = 0f;
 
         float target = (GameState == State.Playing && slowMoRequests > 0)
             ? Mathf.Max(0.05f, slowMoTimeScale)

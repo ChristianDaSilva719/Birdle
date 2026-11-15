@@ -60,6 +60,7 @@ public class LevelGenerator : MonoBehaviour
     [SerializeField] Color holeColour = new Color(0.04f, 0.06f, 0.12f, 1f);
     [SerializeField] Color holeRimColour = new Color(0.16f, 0.22f, 0.38f, 1f);
     [SerializeField] int holeSortingOrder = -5;         //Below the ball and pegs
+    [SerializeField] int minPegsForHoles = 7; //Levels with fewer pegs than this never get holes
 
     [Header("Phone Screen Fit")]
     [SerializeField] bool fitCameraToPhone = true;
@@ -184,11 +185,22 @@ public class LevelGenerator : MonoBehaviour
         BuildBoard(size, randomFlip && Random.value < 0.5f, randomFlip && Random.value < 0.5f);
 
         //Holes go down first so the pegs can be placed around them
-        PlaceHoles();
-        SpawnHoles();
-
         int wanted = Mathf.Min(firstLevelPegs + pegsPerLevelIncrease * (level - 1), maxPegCount);
+
+        //Holes go down first so the pegs can be placed around them
+        PlaceHoles(wanted);
         PlacePegs(wanted);
+
+        //If fewer pegs fit than expected (small shapes), the holes would take over the board, so drop them and place the pegs again
+        if (holePositions.Count > 0 && positions.Count < minPegsForHoles)
+        {
+            holePositions.Clear();
+            currentHoleRadius = 0f;
+            currentHoleCaptureFraction = 0f;
+            PlacePegs(wanted);
+        }
+
+        SpawnHoles();
         PickPowerUps();
 
         LevelData data = SpawnPegs();
@@ -553,13 +565,14 @@ public class LevelGenerator : MonoBehaviour
         return Mathf.Clamp01(fraction);
     }
 
-    void PlaceHoles()
+    void PlaceHoles(int wantedPegs)
     {
         holePositions.Clear();
         currentHoleRadius = 0f;
         currentHoleCaptureFraction = 0f;
 
         if (currentLevel < holesStartLevel) return;
+        if (wantedPegs < minPegsForHoles) return; 
 
         //The most holes this level can have goes up as the levels go up, the actual number is random up to that
         int upper = Mathf.Min(maxHoles, 1 + (currentLevel - holesStartLevel) / Mathf.Max(1, levelsPerExtraHole));
@@ -766,7 +779,9 @@ public class LevelGenerator : MonoBehaviour
 
         //1-2 power-ups, but never more than 1 per 5 pegs so small levels stay simple
         int count = Mathf.Min(Random.Range(1, maxPowerUps + 1), Mathf.Max(1, positions.Count / 5));
-        count = Mathf.Min(count, positions.Count);
+
+        //Always leave at least 1 normal peg, so there is always one to be orange
+        count = Mathf.Clamp(count, 0, positions.Count - 1);
 
         while (powerUpIndices.Count < count)
         {

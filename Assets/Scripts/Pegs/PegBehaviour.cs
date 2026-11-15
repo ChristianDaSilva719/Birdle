@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public enum PegType
 {
@@ -21,10 +22,19 @@ public class PegBehaviour : MonoBehaviour
     [SerializeField] SpriteRenderer PegBoarderSR;
     [SerializeField] SpriteRenderer InnerPegSR;
 
+    [Header("Hit Feedback")]
+    [SerializeField] float hitPopScale = 1.35f; //How big the peg gets at the peak of the pop
+    [SerializeField] float hitPopTime = 0.25f;  //Total time to grow and shrink back
+
+    private Vector3 borderBaseScale;
+    private Vector3 innerBaseScale;
+
     private bool slowMoRequested = false;
 
     private void Awake()
     {
+        borderBaseScale = PegBoarderSR.transform.localScale;
+        innerBaseScale = InnerPegSR.transform.localScale;
         ApplyType();
     }
 
@@ -113,9 +123,8 @@ public class PegBehaviour : MonoBehaviour
         BeenHit = true;
 
         //Greys out straight away but stays solid, the GameManager removes it when the ball stops
-        PegBoarderSR.color = new Color(DisabledColour.r + 0.5f, DisabledColour.g + 0.5f, DisabledColour.b + 0.5f);
-        InnerPegSR.color = DisabledColour;
-    
+        StartCoroutine(HitPopRoutine());
+
 
         GameManager.instance.RoundScore += ScoreAmount;
         GameManager.instance.RegisterHitPeg(this);
@@ -138,5 +147,33 @@ public class PegBehaviour : MonoBehaviour
             SoundManager.PlaySound(SoundType.Peg_Hit, 1, true);
         }
 
+    }
+    IEnumerator HitPopRoutine()
+    {
+        Color borderTarget = new Color(DisabledColour.r + 0.5f, DisabledColour.g + 0.5f, DisabledColour.b + 0.5f);
+
+        float time = 0f;
+        while (time < hitPopTime)
+        {
+            time += Time.unscaledDeltaTime; //Unscaled so the orange peg slow-mo doesn't drag it out
+            float k = Mathf.Clamp01(time / hitPopTime);
+
+            //0 -> 1 -> 0 over the animation, so the peg grows and then settles back to normal size
+            float pop = Mathf.Sin(k * Mathf.PI);
+            float scale = 1f + (hitPopScale - 1f) * pop;
+            PegBoarderSR.transform.localScale = borderBaseScale * scale;
+            InnerPegSR.transform.localScale = innerBaseScale * scale;
+
+            //Starts as a white flash and fades into the greyed-out colour
+            InnerPegSR.color = Color.Lerp(Color.white, DisabledColour, k);
+            PegBoarderSR.color = Color.Lerp(Color.white, borderTarget, k);
+
+            yield return null;
+        }
+
+        PegBoarderSR.transform.localScale = borderBaseScale;
+        InnerPegSR.transform.localScale = innerBaseScale;
+        InnerPegSR.color = DisabledColour;
+        PegBoarderSR.color = borderTarget;
     }
 }

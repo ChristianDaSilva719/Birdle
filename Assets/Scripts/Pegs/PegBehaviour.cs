@@ -100,6 +100,7 @@ public class PegBehaviour : MonoBehaviour
     //Called by the GameManager once the ball has stopped
     public void DestroyPeg() //Destroys The peg and plays break effects
     {
+        SoundManager.PlaySound(SoundType.Peg_Break, 1, true);
         Destroy(this.gameObject);
     }
 
@@ -111,13 +112,28 @@ public class PegBehaviour : MonoBehaviour
         //Greys out straight away but stays solid, the GameManager removes it when the ball stops
         PegBoarderSR.color = new Color(DisabledColour.r + 0.5f, DisabledColour.g + 0.5f, DisabledColour.b + 0.5f);
         InnerPegSR.color = DisabledColour;
+    
 
         GameManager.instance.RoundScore += ScoreAmount;
         GameManager.instance.RegisterHitPeg(this);
 
         if (Peg == PegType.PEG_REQUIRED)
+        {
             GameManager.instance.OnRequiredPegHit();
+        }
         else if (Peg == PegType.PEG_POWERUP)
+        {
             GameManager.instance.OnPowerUpHit();
+        }
+
+        if (Peg == PegType.PEG_REQUIRED)
+        {
+            SoundManager.PlaySound(SoundType.Peg_HitSpecial, 1, true);
+        }
+        else
+        {
+            SoundManager.PlaySound(SoundType.Peg_Hit, 1, true);
+        }
+
     }
 }

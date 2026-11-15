@@ -98,8 +98,11 @@ public class PegBehaviour : MonoBehaviour
 
     //-----Destroy Peg----//
     //Called by the GameManager once the ball has stopped
-    public void DestroyPeg() //Destroys The peg and plays break effects
+    public bool IsRemoved { get; private set; }
+
+    public void DestroyPeg()
     {
+        IsRemoved = true; //So a save in the same frame skips this peg
         SoundManager.PlaySound(SoundType.Peg_Break, 1, true);
         Destroy(this.gameObject);
     }

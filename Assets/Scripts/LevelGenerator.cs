@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor.Overlays;
 using UnityEngine;
 
 public struct LevelData
@@ -112,6 +113,9 @@ public class LevelGenerator : MonoBehaviour
     private float currentHoleRadius;          //All holes on a level share one size, which depends on how many there are
     private float currentHoleCaptureFraction; //...and one capture share, which grows with the size
     private int currentLevel;
+    private bool currentFlipX, currentFlipY;
+    private Vector2 currentBoardSize;
+    private PegType[] forcedTypes; //Set when loading a save
 
     //-----Safety-----//
 
@@ -177,7 +181,7 @@ public class LevelGenerator : MonoBehaviour
 
         Vector2 size = BoardSizeFor(level);
         currentShape = PickShape(level);
-        BuildBoard(size);
+        BuildBoard(size, randomFlip && Random.value < 0.5f, randomFlip && Random.value < 0.5f);
 
         //Holes go down first so the pegs can be placed around them
         PlaceHoles();
@@ -445,15 +449,14 @@ public class LevelGenerator : MonoBehaviour
         camera.transform.position = new Vector3(boardCentre.x, boardCentre.y + yShift, camera.transform.position.z);
     }
 
-    void BuildBoard(Vector2 size)
+    void BuildBoard(Vector2 size, bool flipX, bool flipY)
     {
         float hw = size.x * 0.5f;
         float hh = size.y * 0.5f;
         Vector2 c = boardCentre;
 
         //Scale the shape's -1 to 1 points up to the board size, with an optional random mirror
-        bool flipX = randomFlip && Random.value < 0.5f;
-        bool flipY = randomFlip && Random.value < 0.5f;
+        currentFlipX = flipX; currentFlipY = flipY; currentBoardSize = size;
 
         boardPolygon.Clear();
         foreach (Vector2 u in currentShape.points)
@@ -826,7 +829,8 @@ public class LevelGenerator : MonoBehaviour
     {
         ClearPegs();
 
-        PegType[] types = RollTypes();
+        PegType[] types = (forcedTypes != null && forcedTypes.Length == positions.Count) ? forcedTypes : RollTypes();
+        forcedTypes = null;
         int requiredCount = 0;
         Transform parent = GetPegParent();
 
@@ -870,5 +874,65 @@ public class LevelGenerator : MonoBehaviour
             list[i] = list[j];
             list[j] = temp;
         }
+    }
+
+    public void CaptureLayout(SaveData s)
+    {
+        s.shapeName = CurrentShapeName;
+        s.flipX = currentFlipX;
+        s.flipY = currentFlipY;
+        s.boardSize = currentBoardSize;
+        s.holeRadius = currentHoleRadius;
+        s.holeCaptureFraction = currentHoleCaptureFraction;
+        s.holes = holePositions.ToArray();
+
+        List<PegSave> list = new List<PegSave>();
+        foreach (PegBehaviour peg in spawnedPegs)
+        {
+            if (peg == null || peg.IsRemoved) continue;
+            list.Add(new PegSave { position = peg.transform.position, type = peg.Peg });
+        }
+        s.pegs = list.ToArray();
+    }
+
+    public LevelData RestoreLevel(SaveData s)
+    {
+        currentLevel = s.level;
+
+        if (!PrefabIsSafe())
+            return new LevelData { level = s.level };
+
+        if (clearLeftoverPegs) RemoveLeftoverPegs();
+        if (shapes == null) BuildShapes();
+
+        ShapeDef found = shapes[0]; //Falls back to the rectangle if the name isn't found
+        foreach (ShapeDef sd in shapes)
+        {
+            if (sd.name == s.shapeName) { found = sd; break; }
+        }
+        currentShape = found;
+        lastShape = found;
+
+        BuildBoard(s.boardSize, s.flipX, s.flipY);
+
+        holePositions.Clear();
+        if (s.holes != null) holePositions.AddRange(s.holes);
+        currentHoleRadius = s.holeRadius;
+        currentHoleCaptureFraction = s.holeCaptureFraction;
+        SpawnHoles();
+
+        positions.Clear();
+        powerUpIndices.Clear();
+        forcedTypes = new PegType[s.pegs.Length];
+        for (int i = 0; i < s.pegs.Length; i++)
+        {
+            positions.Add(s.pegs[i].position);
+            forcedTypes[i] = s.pegs[i].type;
+        }
+
+        LevelData data = SpawnPegs();
+        data.turns = s.turnsLeft;
+        data.requiredCount = s.requiredPegsLeft;
+        return data;
     }
 }

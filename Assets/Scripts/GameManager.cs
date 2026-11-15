@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor.Overlays;
 using UnityEngine;
 
 public enum State
@@ -74,7 +75,17 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         CurrentLevel = 1;
-        BeginAttempt(levelGenerator.GenerateNewLevel(CurrentLevel));
+        SaveData save = SaveManager.Load();
+
+        if (save != null)
+        {
+            RestoreFromSave(save);
+        }
+        else
+        {
+            BeginAttempt(levelGenerator.GenerateNewLevel(CurrentLevel));
+            SaveProgress();
+        }
     }
 
     private void OnDestroy()
@@ -125,6 +136,7 @@ public class GameManager : MonoBehaviour
 
         CurrentLevel++;
         BeginAttempt(levelGenerator.GenerateNewLevel(CurrentLevel));
+        SaveProgress();
     }
 
     //Lost -> same peg positions, power-ups stay put, orange pegs are re-rolled, turns reset
@@ -135,6 +147,7 @@ public class GameManager : MonoBehaviour
         CurrentLevel = 1;
         GameScore = 0;
         BeginAttempt(levelGenerator.GenerateNewLevel(CurrentLevel));
+        SaveProgress();
     }
 
     //Lost -> watch an ad to carry on with the board exactly as it is
@@ -149,6 +162,7 @@ public class GameManager : MonoBehaviour
             revivesUsed++;
             AmountOfBalls += reviveTurns;
             GameState = State.Playing;
+            SaveProgress();
             OnYourMove?.Invoke();
         });
     }
@@ -174,7 +188,10 @@ public class GameManager : MonoBehaviour
         else if (AmountOfBalls <= 0)
             EndGame();
         else
+        {
+            SaveProgress();
             OnYourMove?.Invoke();
+        }
     }
 
     //The ball dropped into a hole and has been put back where the shot started
@@ -222,13 +239,47 @@ public class GameManager : MonoBehaviour
         GameScore += banked;
 
         OnLevelComplete?.Invoke(RoundScore, turnBonus);
+        SaveProgress(true);
     }
 
     void EndGame()
     {
         GameState = State.GameOver;
         OnGameOver?.Invoke();
+        SaveManager.Delete();
     }
 
+    void RestoreFromSave(SaveData s)
+    {
+        CurrentLevel = s.level;
+        GameScore = s.gameScore;
 
+        if (s.levelCompleted) //They quit on the level complete screen, so carry on with the next level
+        {
+            CurrentLevel++;
+            BeginAttempt(levelGenerator.GenerateNewLevel(CurrentLevel));
+            SaveProgress();
+            return;
+        }
+
+        BeginAttempt(levelGenerator.RestoreLevel(s)); //Turns and required pegs come from the save
+        RoundScore = s.roundScore;
+        ball.ResetTo(s.ballPosition);
+    }
+
+    void SaveProgress(bool levelCompleted = false)
+    {
+        SaveData s = new SaveData
+        {
+            level = CurrentLevel,
+            gameScore = GameScore,
+            roundScore = RoundScore,
+            turnsLeft = AmountOfBalls,
+            requiredPegsLeft = RequiredPegsLeft,
+            levelCompleted = levelCompleted,
+            ballPosition = ball.transform.position
+        };
+        levelGenerator.CaptureLayout(s);
+        SaveManager.Save(s);
+    }
 }

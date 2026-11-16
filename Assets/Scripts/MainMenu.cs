@@ -1,6 +1,10 @@
 using TMPro;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+
 
 public class MainMenu : MonoBehaviour
 {
@@ -14,9 +18,28 @@ public class MainMenu : MonoBehaviour
     [SerializeField] string startText = "Start";
     [SerializeField] string continueText = "Continue";
 
+    [Header("Settings")]
+    public Toggle MuteToggle;
+
     void Start()
     {
         RefreshPlayButtons();
+
+        if (PlayerPrefs.HasKey("Muted"))
+        {
+            if (PlayerPrefs.GetInt("Muted") == 1)
+            {
+                MuteToggle.isOn = true;
+            }
+            else
+            {
+                MuteToggle.isOn = false;
+            }
+        }
+        else
+        {
+            MuteToggle.isOn = false;
+        }
     }
 
     //Also call this if your menu panel is shown again later (e.g. after coming back from a settings screen)
@@ -62,4 +85,17 @@ public class MainMenu : MonoBehaviour
         SaveManager.Delete();
         SceneManager.LoadScene(_LevelToLoad);
     }
+
+    public void ToggleMute()
+    {
+        if (MuteToggle.isOn)
+        {
+            PlayerPrefs.SetInt("Muted", 1);
+        }
+        else
+        {
+            PlayerPrefs.SetInt("Muted", 0);
+        }
+    }
 }
+

@@ -692,14 +692,16 @@ MonoBehaviour:
     - {fileID: 8300000, guid: c8f1bef76360133418c5fe63d87d936c, type: 3}
   - name: Peg_HitSpecial
     sounds:
-    - {fileID: 8300000, guid: 4c261269603c7a841a333db7fc625437, type: 3}
+    - {fileID: 8300000, guid: 11bcae097c488f94185cdbdb439d4dc8, type: 3}
   - name: Peg_Break
     sounds:
-    - {fileID: 8300000, guid: eb86d02c990934641bca7f96155a55cb, type: 3}
-    - {fileID: 8300000, guid: e8ea9ecae76853d4bb9f698c10e35dfb, type: 3}
-    - {fileID: 8300000, guid: b4ac9b5486059f34b9c7ed2b692987cb, type: 3}
+    - {fileID: 8300000, guid: 6f77590bc5f2fd949abcb9c9b20ef636, type: 3}
   - name: BlackHole_Eat
-    sounds: []
+    sounds:
+    - {fileID: 8300000, guid: 9f4ccbdab2eb93b41ab8f18d4d8f4cdf, type: 3}
+  - name: Level_Complete
+    sounds:
+    - {fileID: 8300000, guid: 72a293ba636a2104c9e551b6147d7f6a, type: 3}
 --- !u!82 &375535866
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2518,6 +2520,7 @@ MonoBehaviour:
   holeColour: {r: 0.04, g: 0.06, b: 0.12, a: 1}
   holeRimColour: {r: 0.16, g: 0.22, b: 0.38, a: 1}
   holeSortingOrder: -5
+  minPegsForHoles: 7
   fitCameraToPhone: 1
   sideMargin: 0.08
   topMargin: 0.18
@@ -4008,6 +4011,7 @@ MonoBehaviour:
   newGameButton: {fileID: 0}
   startText: Start
   continueText: Continue
+  MuteToggle: {fileID: 0}
 --- !u!1 &1986347726
 GameObject:
   m_ObjectHideFlags: 0

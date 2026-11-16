@@ -113,7 +113,7 @@ public class PegBehaviour : MonoBehaviour
     public void DestroyPeg()
     {
         IsRemoved = true; //So a save in the same frame skips this peg
-        SoundManager.PlaySound(SoundType.Peg_Break, 1, true);
+        SoundManager.PlaySound(SoundType.Peg_Break, 0.5f, true);
         Destroy(this.gameObject);
     }
 

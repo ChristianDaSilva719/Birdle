@@ -144,6 +144,8 @@ public class GameUI : MonoBehaviour
         }
 
         if (levelCompletePanel != null) levelCompletePanel.SetActive(true);
+
+        SoundManager.PlaySound(SoundType.Level_Complete);
     }
 
     void HandleGameOver()

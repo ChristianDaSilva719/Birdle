@@ -222,5 +222,7 @@ public class DragLaunchBall : MonoBehaviour
         fallRoutine = null;
 
         if (GameManager.instance != null) GameManager.instance.OnBallFellInHole();
+
+        SoundManager.PlaySound(SoundType.BlackHole_Eat, 10, true);
     }
 }

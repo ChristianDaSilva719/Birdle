@@ -7,7 +7,8 @@ public enum SoundType
     Peg_Hit,
     Peg_HitSpecial,
     Peg_Break,
-    BlackHole_Eat
+    BlackHole_Eat,
+    Level_Complete
 }
 
 [RequireComponent(typeof(AudioSource)), ExecuteInEditMode] //Auto adds an audio source component
@@ -25,6 +26,17 @@ public class SoundManager : MonoBehaviour
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
+        if(PlayerPrefs.HasKey("Muted"))
+        {
+            if(PlayerPrefs.GetInt("Muted") == 1)
+            {
+                audioSource.mute = true;
+            }
+            else
+            {
+                audioSource.mute = false;
+            }
+        }
     }
 
     //Plays a sound based on sound type
